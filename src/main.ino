@@ -131,111 +131,108 @@ void setupServer() {
 
   server.on("/", HTTP_GET, []() {
     String html = "<html><head>";
-html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>";    
-html += "<style>";
-html += "    body {";
-html += "        font-family: Arial, sans-serif;";
-html += "        display: flex;";
-html += "        justify-content: center;";
-html += "        align-items: center;";
-html += "        height: 100vh;";
-html += "        margin: 0;";
-html += "        background-color: #f4f4f4;";
-html += "        overflow-x: hidden;";
-html += "    }";
-html += "    .container {";
-html += "        text-align: center;";
-html += "        background: white;";
-html += "        padding: 20px;";
-html += "        border-radius: 8px;";
-html += "        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);";
-html += "        width: 100%;"; 
-html += "        max-width: 500px;";  /* Limit width on desktop screens */
-html += "        box-sizing: border-box;";
-html += "    }";
-html += "    .row {";
-html += "        display: flex;";
-html += "        justify-content: center;";
-html += "        align-items: center;";
-html += "        margin-bottom: 10px;";
-html += "    }";
-html += "    .card {";
-html += "        background-color: #f9f9f9;";
-html += "        padding: 20px;";
-html += "        border-radius: 8px;";
-html += "        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);";
-html += "        margin-bottom: 20px;";
-html += "        width: 100%;";  
-html += "        box-sizing: border-box;";
-html += "    }";
-html += "    button {";
-html += "        margin: 10px;";
-html += "        padding: 15px 20px;"; /* Increase padding for easier tapping on mobile */
-html += "        font-size: 1rem;"; /* Set a relative font size */
-html += "        border: none;";
-html += "        border-radius: 5px;";
-html += "        cursor: pointer;";
-html += "        transition: background-color 0.3s;";
-html += "    }";
-html += "    .on {";
-html += "        background-color: #28a745;";
-html += "        color: white;";
-html += "    }";
-html += "    .off {";
-html += "        background-color: blue;";
-html += "        color: white;";
-html += "    }";
-html += "    input {";
-html += "        padding: 15px;"; /* Increase input padding */
-html += "        margin: 10px;";
-html += "        border: 1px solid #ccc;";
-html += "        border-radius: 5px;";
-html += "        font-size: 1rem;"; /* Increase font size for easier reading */
-html += "        width: calc(100% - 40px);"; /* Ensure input takes up available space with padding */
-html += "    }";
+    html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>";    
+    html += "<style>";
+    html += "    body {";
+    html += "        font-family: Arial, sans-serif;";
+    html += "        display: flex;";
+    html += "        justify-content: center;";
+    html += "        align-items: center;";
+    html += "        height: 100vh;";
+    html += "        margin: 0;";
+    html += "        background-color: #f4f4f4;";
+    html += "        overflow-x: hidden;";
+    html += "    }";
+    html += "    .container {";
+    html += "        text-align: center;";
+    html += "        background: white;";
+    html += "        padding: 20px;";
+    html += "        border-radius: 8px;";
+    html += "        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);";
+    html += "        width: 100%;"; 
+    html += "        max-width: 500px;"; 
+    html += "        box-sizing: border-box;";
+    html += "    }";
+    html += "    .row {";
+    html += "        display: flex;";
+    html += "        justify-content: center;";
+    html += "        align-items: center;";
+    html += "        margin-bottom: 10px;";
+    html += "    }";
+    html += "    .card {";
+    html += "        background-color: #f9f9f9;";
+    html += "        padding: 20px;";
+    html += "        border-radius: 8px;";
+    html += "        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);";
+    html += "        margin-bottom: 20px;";
+    html += "        width: 100%;";  
+    html += "        box-sizing: border-box;";
+    html += "    }";
+    html += "    button {";
+    html += "        margin: 10px;";
+    html += "        padding: 15px 20px;"; 
+    html += "        font-size: 1rem;";
+    html += "        border: none;";
+    html += "        border-radius: 5px;";
+    html += "        cursor: pointer;";
+    html += "        transition: background-color 0.3s;";
+    html += "    }";
+    html += "    .on {";
+    html += "        background-color: #28a745;";
+    html += "        color: white;";
+    html += "    }";
+    html += "    .off {";
+    html += "        background-color: blue;";
+    html += "        color: white;";
+    html += "    }";
+    html += "    input {";
+    html += "        padding: 15px;"; 
+    html += "        margin: 10px;";
+    html += "        border: 1px solid #ccc;";
+    html += "        border-radius: 5px;";
+    html += "        font-size: 1rem;"; 
+    html += "        width: calc(100% - 40px);"; 
+    html += "    }";
 
-html += "    /* Media query for smaller devices */";
-html += "    @media screen and (max-width: 600px) {";
-html += "        body {";
-html += "            height: auto;";
-html += "            justify-content: flex-start;";
-html += "            padding: 10px;"; /* Add padding for small screens */
-html += "        }";
-html += "        .container {";
-html += "            width: 100vw;";  /* Full width on small screens */ 
-html += "            height: auto;"; /* Allow auto height */
-html += "            max-width: none;"; /* Remove the max-width restriction */
-html += "            border-radius: 0;"; /* Remove border-radius for mobile */
-html += "            padding: 10px;"; /* Reduce padding for mobile */
-html += "        }";
-html += "        button {";
-html += "            width: 100%;"; /* Make buttons full width on mobile */
-html += "            font-size: 1.2rem;"; /* Slightly larger text for mobile buttons */
-html += "        }";
-html += "        input {";
-html += "            font-size: 1.2rem;"; /* Increase font size on mobile for inputs */
-html += "            width: calc(100% - 20px);"; /* Make input fill the space */
-html += "        }";
-html += "    }";
-html += "</style>";
+    html += "    /* Media query for smaller devices */";
+    html += "    @media screen and (max-width: 600px) {";
+    html += "        body {";
+    html += "            height: auto;";
+    html += "            justify-content: flex-start;";
+    html += "            padding: 10px;"; 
+    html += "        }";
+    html += "        .container {";
+    html += "            width: 100vw;";  
+    html += "            height: auto;";
+    html += "            max-width: none;"; 
+    html += "            border-radius: 0;";
+    html += "            padding: 10px;";
+    html += "        }";
+    html += "        button {";
+    html += "            width: 100%;";
+    html += "            font-size: 1.2rem;";
+    html += "        }";
+    html += "        input {";
+    html += "            font-size: 1.2rem;";
+    html += "            width: calc(100% - 20px);";
+    html += "        }";
+    html += "    }";
+    html += "</style>";
     html += "</head><body>";
     html += "<div class='container'>";
     html += "<p>Went sensor reading: <span id='wentSensorReading'>" + String(wentSensorReading) + "</span></p>";
     html += "<p>Light sensor reading: <span id='lightSensorReading'>" + String(lightSensorReading) + "</span></p>";
     html += "<p>Toggle went in: <span id='delayToToggle'>N/A</span></p>";
 
-    // First row for Toggle button
     html += "<div class='row'>";
     html += "<button onclick='changeState()'>Toggle went</button>";
     html += "</div>";
 
-    // Second row for Mirror Light and Mirror Heater buttons
     html += "<div class='row'>";
     html += "<button id='lampButton' class='" + String(mirrorLampState ? "on" : "off") + "' onclick='toggleMirrorLight()'>Mirror Light: " + String(mirrorLampState ? "On" : "Off") + "</button>";
     html += "<button id='heaterButton' class='" + String(mirrorHeaterState ? "on" : "off") + "' onclick='toggleMirrorHeater()'>Mirror Heater: " + String(mirrorHeaterState ? "On" : "Off") + "</button>";
     html += "</div>";
 
-    // Card for delay by lights input and button
     html += "<div class='card'>";
     html += "<div class='row'>";
     html += "<label for='delayByLightsInput'>Enter delay after turning lights off (1-60 minutes):</label>";
@@ -246,7 +243,6 @@ html += "</style>";
     html += "</div>";
     html += "</div>";
 
-    // Card for delay input and button
     html += "<div class='card'>";
     html += "<div class='row'>";
     html += "<label for='delayInput'>Enter delay (1-60 minutes):</label>";
