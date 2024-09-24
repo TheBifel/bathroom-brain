@@ -224,8 +224,8 @@ void setupServer() {
     html += "</style>";
     html += "</head><body>";
     html += "<div class='container'>";
-    html += "<p>Went sensor reading: <span id='wentSensorReading'>" + String(wentSensorReading) + "</span></p>";
-    html += "<p>Light sensor reading: <span id='lightSensorReading'>" + String(lightSensorReading) + "</span></p>";
+    html += "<p>Went sensor reading: <span id='wentSensorReading'>null</span></p>";
+    html += "<p>Light sensor reading: <span id='lightSensorReading'>null</span></p>";
     html += "<p>Toggle went in: <span id='delayToToggle'>N/A</span></p>";
 
     html += "<div class='row'>";
@@ -233,8 +233,8 @@ void setupServer() {
     html += "</div>";
 
     html += "<div class='row'>";
-    html += "<button id='lampButton' class='" + String(mirrorLampState ? "on" : "off") + "' onclick='toggleMirrorLight()'>Mirror Light: " + String(mirrorLampState ? "On" : "Off") + "</button>";
-    html += "<button id='heaterButton' class='" + String(mirrorHeaterState ? "on" : "off") + "' onclick='toggleMirrorHeater()'>Mirror Heater: " + String(mirrorHeaterState ? "On" : "Off") + "</button>";
+    html += "<button id='lampButton' class='off' onclick='toggleMirrorLight()'>Mirror Light: Off</button>";
+    html += "<button id='heaterButton' class='off' onclick='toggleMirrorHeater()'>Mirror Heater: Off</button>";
     html += "</div>";
 
     html += "<div class='card'>";
@@ -242,7 +242,7 @@ void setupServer() {
     html += "<label for='delayByLightsInput'>Enter delay after turning lights off (1-60 minutes):</label>";
     html += "</div>";
     html += "<div class='row'>";
-    html += "<input type='text' id='delayByLightsInput' pattern='[0-9]*' placeholder='1-60' value='" + String(delayByLightsMinutes) + "'>";
+    html += "<input type='text' id='delayByLightsInput' pattern='[0-9]*' placeholder='1-60' value='null'>";
     html += "<button onclick='sendDelayByLights()'>Accept</button>";
     html += "</div>";
     html += "</div>";
@@ -252,52 +252,71 @@ void setupServer() {
     html += "<label for='delayInput'>Enter delay (1-60 minutes):</label>";
     html += "</div>";
     html += "<div class='row'>";
-    html += "<input type='text' id='delayInput' pattern='[0-9]*' placeholder='1-60' value='" + String(delayMinutes) + "'>";
+    html += "<input type='text' id='delayInput' pattern='[0-9]*' placeholder='1-60' value='null'>";
     html += "<button onclick='sendDelay()'>Accept</button>";
     html += "</div>";
     html += "</div>";
 
     html += "</div>";
     html += "<script>";
-    html += "    function update() {";
+    html += "    function getMemoryData(callback) {";
     html += "        var xhr = new XMLHttpRequest();";
-    html += "        xhr.open('GET', '/getSensorData', true);";
+    html += "        xhr.open('GET', '/getMemoryData', true);";
     html += "        xhr.onreadystatechange = function() {";
     html += "            if (xhr.readyState === 4 && xhr.status === 200) {";
     html += "                var data = JSON.parse(xhr.responseText);";
-    html += "                document.getElementById('wentSensorReading').textContent = data.wentSensorReading;";
-    html += "                document.getElementById('lightSensorReading').textContent = data.lightSensorReading;";
-    html += "                document.getElementById('delayToToggle').textContent = data.delayToToggle !== null ? parseInt(data.delayToToggle / 1000) : 'N/A';";
-    
-    html += "                document.getElementById('heaterButton').textContent = 'Mirror Heater: ' + (data.mirrorHeaterState ? 'On' : 'Off');";
-    html += "                document.getElementById('lampButton').textContent = 'Mirror Light: ' + (data.mirrorLampState ? 'On' : 'Off');";
-
-    html += "                var heaterButton = document.getElementById('heaterButton');";
-    html += "                var lampButton = document.getElementById('lampButton');";
-    html += "                if (data.mirrorHeaterState) {";
-    html += "                    heaterButton.classList.remove('off');";
-    html += "                    heaterButton.classList.add('on');";
-    html += "                } else {";
-    html += "                    heaterButton.classList.remove('on');";
-    html += "                    heaterButton.classList.add('off');";
-    html += "                }";
-    html += "                if (data.mirrorLampState) {";
-    html += "                    lampButton.classList.remove('off');";
-    html += "                    lampButton.classList.add('on');";
-    html += "                } else {";
-    html += "                    lampButton.classList.remove('on');";
-    html += "                    lampButton.classList.add('off');";
-    html += "                }";
+    html += "                callback(data);";
     html += "            }";
     html += "        };";
     html += "        xhr.send();";
     html += "    }";
+
+    html += "    function updatePageWithData(data) {";
+    html += "        document.getElementById('wentSensorReading').textContent = data.wentSensorReading;";
+    html += "        document.getElementById('lightSensorReading').textContent = data.lightSensorReading;";
+    html += "        document.getElementById('delayToToggle').textContent = data.delayToToggle !== null ? parseInt(data.delayToToggle / 1000) : 'N/A';";
+
+    html += "        document.getElementById('heaterButton').textContent = 'Mirror Heater: ' + (data.mirrorHeaterState ? 'On' : 'Off');";
+    html += "        document.getElementById('lampButton').textContent = 'Mirror Light: ' + (data.mirrorLampState ? 'On' : 'Off');";
+
+    html += "        var heaterButton = document.getElementById('heaterButton');";
+    html += "        if (data.mirrorHeaterState) {";
+    html += "            heaterButton.classList.remove('off');";
+    html += "            heaterButton.classList.add('on');";
+    html += "        } else {";
+    html += "            heaterButton.classList.remove('on');";
+    html += "            heaterButton.classList.add('off');";
+    html += "        }";
+
+    html += "        var lampButton = document.getElementById('lampButton');";
+    html += "        if (data.mirrorLampState) {";
+    html += "            lampButton.classList.remove('off');";
+    html += "            lampButton.classList.add('on');";
+    html += "        } else {";
+    html += "            lampButton.classList.remove('on');";
+    html += "            lampButton.classList.add('off');";
+    html += "        }";
+    html += "    }";
+
+    html += "    function update() {";
+    html += "        getMemoryData(updatePageWithData);";
+    html += "    }";
+    
+    html += "    function initPage() {";
+    html += "        getMemoryData(function(data) {";
+    html += "          document.getElementById('delayByLightsInput').value = data.delayByLightsMinutes;";
+    html += "          document.getElementById('delayInput').value = data.delayMinutes;";
+    html += "          updatePageWithData(data);";
+    html += "        });";
+    html += "    }";
+
     html += "    function changeState() {";
     html += "        var xhr = new XMLHttpRequest();";
     html += "        xhr.open('GET', '/changeState', true);";
     html += "        xhr.send();";
     html += "        update();";
     html += "    }";
+
     html += "    function toggleMirrorLight() {";
     html += "        var xhr = new XMLHttpRequest();";
     html += "        xhr.open('GET', '/toggleMirrorLight', true);";
@@ -333,12 +352,13 @@ void setupServer() {
     html += "        }";
     html += "    }";
     html += "    setInterval(update, 1000);";
+    html += "    initPage();";
     html += "</script>";
     html += "</body></html>";
     server.send(200, "text/html", html);
   });
 
-server.on("/getSensorData", HTTP_GET, []() {
+server.on("/getMemoryData", HTTP_GET, []() {
     String json = "{";
     json += "\"wentSensorReading\": " + String(wentSensorReading);
     json += ", \"lightSensorReading\": " + String(lightSensorReading);
@@ -347,6 +367,8 @@ server.on("/getSensorData", HTTP_GET, []() {
     }
     json += ", \"mirrorHeaterState\":" + String(mirrorHeaterState);
     json += ", \"mirrorLampState\":" + String(mirrorLampState);
+    json += ", \"delayMinutes\":" + String(delayMinutes);
+    json += ", \"delayByLightsMinutes\":" + String(delayByLightsMinutes);
     json += "}";
     
     server.send(200, "application/json", json);
