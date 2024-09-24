@@ -70,18 +70,22 @@ void loop() {
 
   if (previousWentSensorReading != wentSensorReading) {
     previousWentSensorReading = wentSensorReading;
+    mirrorHeaterState = wentSensorReading;
     onWentSensorChange();
+    updateMirrorHeater();
   }  
 
   if (previousLightSensorReading != lightSensorReading) {
     previousLightSensorReading = lightSensorReading;
+    mirrorLampState = lightSensorReading;
     onLightsSensorChange();
+    updateMirrorLight();
   }  
 
   if (delayedToggleMillis > 0 && millis() > delayedToggleMillis) {
     delayedToggleMillis = 0;
     if (wentSensorReading) {
-      toggle();
+      toggleWent();
     }
   }
 }
@@ -349,7 +353,7 @@ server.on("/getSensorData", HTTP_GET, []() {
 });
 
   server.on("/changeState", HTTP_GET, []() {
-    toggle();
+    toggleWent();
   });
 
   server.on("/setDelay", HTTP_GET, []() {
@@ -401,7 +405,7 @@ void clockUpdate() {
   Serial.println();
 }
 
-void toggle() {
+void toggleWent() {
     digitalWrite(TRIGER, HIGH);
     delay(250);
     digitalWrite(TRIGER, LOW);
@@ -411,6 +415,10 @@ void toggle() {
 
 void toggleMirrorHeater() {
     mirrorHeaterState = !mirrorHeaterState; // Toggle the state
+    updateMirrorHeater();
+}
+
+void updateMirrorHeater() {
     digitalWrite(MIRROR_HEATER, mirrorHeaterState ? HIGH : LOW); // Set pin HIGH or LOW
     Serial.print("Mirror Heater is now: ");
     Serial.println(mirrorHeaterState ? "ON" : "OFF");
@@ -419,6 +427,11 @@ void toggleMirrorHeater() {
 // Function to toggle the mirror light
 void toggleMirrorLight() {
     mirrorLampState = !mirrorLampState; // Toggle the state
+    updateMirrorLight();
+}
+
+// Function to toggle the mirror light
+void updateMirrorLight() {
     digitalWrite(MIRROR_LAMP, mirrorLampState ? HIGH : LOW); // Set pin HIGH or LOW
     Serial.print("Mirror Lamp is now: ");
     Serial.println(mirrorLampState ? "ON" : "OFF");
