@@ -1,16 +1,19 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
-#include <EEPROM.h>  // Include the EEPROM library
+#include <ESP8266HTTPClient.h>
+#include <EEPROM.h>
+#include <ArduinoJson.h>
 #include "webpage.h"
 
 #define TRIGER 5
-#define MIRROR_HEATER 14
 #define MIRROR_LAMP 16
 #define SENSOR_WENT 2
 #define SENSOR_LIGHT 4
 
 const char* ssid = "Patsuk";  // Set your WiFi network name (SSID)
 const char* password = "@@@@@@@@";  // Set your WiFi password
+
+const String MIRROR_DOMAIN = "http://192.168.0.132/";
 
 const int eepromAddrDelay = 0;  // Address in EEPROM to store the delay
 int delayMinutes = 5;
@@ -44,9 +47,6 @@ void setup() {
   pinMode(TRIGER, OUTPUT);
   
   digitalWrite(TRIGER, LOW);
-  
-  pinMode(MIRROR_HEATER, OUTPUT);
-  digitalWrite(MIRROR_HEATER, LOW);
   
   pinMode(MIRROR_LAMP, OUTPUT);
   digitalWrite(MIRROR_LAMP, LOW);
@@ -89,6 +89,13 @@ void loop() {
       toggleWent();
     }
   }
+
+    static unsigned long lastFetchMillis = 0; 
+    unsigned long currentMillis = millis();
+    if (currentMillis - lastFetchMillis >= 5000) {
+        lastFetchMillis = currentMillis;
+        fetchMirrorStates();
+    }
 }
 
 void onWentSensorChange() {
@@ -195,6 +202,70 @@ server.on("/getMemoryData", HTTP_GET, []() {
   });
 }
 
+bool mirrorRequest(String endpoint) {
+    if (WiFi.status() == WL_CONNECTED) {
+        WiFiClient wifiClient;
+        HTTPClient http;
+        http.begin(wifiClient, MIRROR_DOMAIN + endpoint);
+        int httpCode = http.GET();
+
+        if (httpCode == HTTP_CODE_OK) {
+            Serial.println("changeState called successfully");
+            http.end();
+            return true;
+        } else {
+            Serial.printf("changeState request failed with code: %d\n", httpCode);
+        }
+        http.end();
+    } else {
+        Serial.println("Wi-Fi not connected");
+    }
+    return false;
+}
+
+void fetchMirrorStates() {
+    if (WiFi.status() == WL_CONNECTED) {
+        WiFiClient wifiClient;
+        HTTPClient http;
+        http.begin(wifiClient, MIRROR_DOMAIN + "getState");
+        int httpCode = http.GET();
+
+        if (httpCode == HTTP_CODE_OK) {
+            String payload = http.getString();
+            Serial.println("Response from getState: " + payload);
+
+            // Parse JSON to extract the states
+            DynamicJsonDocument doc(256);  // Adjust size if needed
+            DeserializationError error = deserializeJson(doc, payload);
+            if (error) {
+                Serial.print("JSON deserialization failed: ");
+                Serial.println(error.c_str());
+                return;
+            }
+
+            // Assign values from JSON to the booleans
+            if (doc.containsKey("mirrorHeaterState")) {
+                mirrorHeaterState = doc["mirrorHeaterState"].as<int>() != 0;  // Convert int to boolean
+            }
+
+            if (doc.containsKey("mirrorLightState")) {
+                mirrorLampState = doc["mirrorLightState"].as<int>() != 0;  // Convert int to boolean
+            }
+
+            Serial.print("Mirror Heater State: ");
+            Serial.println(mirrorHeaterState ? "ON" : "OFF");
+            Serial.print("Mirror Lamp State: ");
+            Serial.println(mirrorLampState ? "ON" : "OFF");
+        } else {
+            Serial.printf("getState request failed with code: %d\n", httpCode);
+        }
+        http.end();
+    } else {
+        Serial.println("Wi-Fi not connected");
+    }
+}
+
+
 void clockUpdate() {
   wentSensorReading = !digitalRead(SENSOR_WENT);
   lightSensorReading = !digitalRead(SENSOR_LIGHT);
@@ -223,7 +294,7 @@ void toggleMirrorHeater() {
 }
 
 void updateMirrorHeater() {
-    digitalWrite(MIRROR_HEATER, mirrorHeaterState ? HIGH : LOW); // Set pin HIGH or LOW
+    mirrorRequest(mirrorHeaterState ? "turnOnMirrorHeater" : "turnOffMirrorHeater");
     Serial.print("Mirror Heater is now: ");
     Serial.println(mirrorHeaterState ? "ON" : "OFF");
 }
@@ -236,7 +307,8 @@ void toggleMirrorLight() {
 
 // Function to toggle the mirror light
 void updateMirrorLight() {
-    digitalWrite(MIRROR_LAMP, mirrorLampState ? HIGH : LOW); // Set pin HIGH or LOW
+    mirrorRequest(mirrorLampState ? "turnOnMirrorLight" : "turnOffMirrorLight");
+    
     Serial.print("Mirror Lamp is now: ");
     Serial.println(mirrorLampState ? "ON" : "OFF");
 }
